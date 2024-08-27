@@ -397,7 +397,69 @@ emmeans(WattsxConditionxDistance.model, list(pairwise ~ Condition), at = list(Ti
 emmeans(WattsxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "20km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
 
 #============================================================================================================
-#Variable 4 - Cadence
+#Variable 4 - Heat_Exchange
+
+# Step 1 - visualize Heat_Exchange data. This is a good way to visualize and identify outliers
+boxplot(import_data4$Heat_Exchange ~ import_data4$Condition)
+boxplot(import_data4$Heat_Exchange ~ import_data4$Distance)
+
+# Next step, need to first build the model, then check for normal distribution and homoscedascticity. If all good, run the ANOVA, if significant (p < 0.05) run pairwise comparisons
+
+# Step 2 - create model Heat_Exchange x Condition
+Heat_ExchangexConditionxDistance.model <- lmer(Heat_Exchange ~ Condition * Distance + (1|Participant), data = import_data4) # Builds the model w/ Random intercept for participant
+
+# Step 3 Check for normality using wilk shapiro (only works if no missing data) and Q-Q Plot
+
+hist(residuals(Heat_ExchangexConditionxDistance.model), freq = FALSE, main = "Residuals Histogram")
+residuals_Heat_Exchange <- residuals(Heat_ExchangexConditionxDistance.model) #determine residuals for levines test
+qqnorm(residuals_Heat_Exchange) #QQ Plot for Normality
+qqline(residuals_Heat_Exchange) #QQ Plot for Normality
+shapiro.test(residuals_Heat_Exchange) #(if p < 0.05, no normality combined with Q-Q plot interpretation)
+
+#Step 4 Check for homoscedasticity using a plot and levenetest (if all data present)
+
+plot(Heat_ExchangexConditionxDistance.model, resid = TRUE) #visual plot of residuals over fitted model, aiming for constant spread around zero, do not want funnel shape or systematice change in spread
+leveneTest(Heat_Exchange ~ Condition, data = import_data4) #(if p < 0.05, no homoscedasticity combined with plot interpretation)
+
+#Step 5 Find Means and Standard Deviations to be used in results section and graphpad figures:
+
+mean_Heat_Exchange <- aggregate(Heat_Exchange ~ Condition + Distance, data = import_data4, FUN = mean, na.rm = TRUE)
+sd_Heat_Exchange <- aggregate(Heat_Exchange ~ Condition + Distance, data = import_data4, FUN = sd, na.rm = TRUE)
+summary_stats_Heat_Exchange <- merge(mean_Heat_Exchange, sd_Heat_Exchange, by = c("Condition", "Distance"))
+names(summary_stats_Heat_Exchange) <- c("Condition", "Distance", "Mean_Heat_Exchange", "SD_Heat_Exchange")
+summary_stats_Heat_Exchange$Condition <- factor(summary_stats_Heat_Exchange$Condition,
+                                          levels = c("10C", "20C", "32C"))
+
+summary_stats_Heat_Exchange$Distance <- factor(summary_stats_Heat_Exchange$Distance,
+                                         levels = c("0km", "5km", "10km", "15km", "20km"))
+summary_stats_Heat_Exchange <- summary_stats_Heat_Exchange[order(summary_stats_Heat_Exchange$Condition, summary_stats_Heat_Exchange$Distance), ]
+summary_stats_Heat_Exchange$Mean_Heat_Exchange <- round(summary_stats_Heat_Exchange$Mean_Heat_Exchange, 0) #Change the number at the end for number of decimal places
+summary_stats_Heat_Exchange$SD_Heat_Exchange <- round(summary_stats_Heat_Exchange$SD_Heat_Exchange, 0)  #Change the number at the end for number of decimal places
+print(summary_stats_Heat_Exchange)
+
+
+# Step 6 Run an RM-ANOVA on the LMM to get p values and effect size
+
+anova(Heat_ExchangexConditionxDistance.model) # output typical ANOVA stats
+effectsize::eta_squared(Heat_ExchangexConditionxDistance.model, partial = TRUE) # calclate partial eta square effect size
+
+#Step 7 If Condition is significant (p < 0.05), run pairwise comparisons, if not, do not run
+
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), adjust = "bonferroni") # pairwise comp w/ Bonferroni
+
+#Step 8 If Distance is significant (p < 0.05), run pairwise comparisons, if not, do not run
+
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Distance), adjust = "bonferroni") # pairwise comp w/ Bonferroni
+
+#Step 9 If Condition* Distance Interaction is significant (p < 0.05), run pairwise comparisons, if not, do not run. Here, you are essentially running an RM ANOVA at each distance
+
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "0km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "5km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "10km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "15km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "20km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#Variable 5 - Cadence
 
 # Step 1 - visualize Cadence data. This is a good way to visualize and identify outliers
 boxplot(import_data4$Cadence ~ import_data4$Condition)
@@ -458,3 +520,65 @@ emmeans(CadencexConditionxDistance.model, list(pairwise ~ Condition), at = list(
 emmeans(CadencexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "10km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
 emmeans(CadencexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "15km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
 emmeans(CadencexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "20km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+#Variable 4 - Heat_Exchange
+
+# Step 1 - visualize Heat_Exchange data. This is a good way to visualize and identify outliers
+boxplot(import_data4$Heat_Exchange ~ import_data4$Condition)
+boxplot(import_data4$Heat_Exchange ~ import_data4$Distance)
+
+# Next step, need to first build the model, then check for normal distribution and homoscedascticity. If all good, run the ANOVA, if significant (p < 0.05) run pairwise comparisons
+
+# Step 2 - create model Heat_Exchange x Condition
+Heat_ExchangexConditionxDistance.model <- lmer(Heat_Exchange ~ Condition * Distance + (1|Participant), data = import_data4) # Builds the model w/ Random intercept for participant
+
+# Step 3 Check for normality using wilk shapiro (only works if no missing data) and Q-Q Plot
+
+hist(residuals(Heat_ExchangexConditionxDistance.model), freq = FALSE, main = "Residuals Histogram")
+residuals_Heat_Exchange <- residuals(Heat_ExchangexConditionxDistance.model) #determine residuals for levines test
+qqnorm(residuals_Heat_Exchange) #QQ Plot for Normality
+qqline(residuals_Heat_Exchange) #QQ Plot for Normality
+shapiro.test(residuals_Heat_Exchange) #(if p < 0.05, no normality combined with Q-Q plot interpretation)
+
+#Step 4 Check for homoscedasticity using a plot and levenetest (if all data present)
+
+plot(Heat_ExchangexConditionxDistance.model, resid = TRUE) #visual plot of residuals over fitted model, aiming for constant spread around zero, do not want funnel shape or systematice change in spread
+leveneTest(Heat_Exchange ~ Condition, data = import_data4) #(if p < 0.05, no homoscedasticity combined with plot interpretation)
+
+#Step 5 Find Means and Standard Deviations to be used in results section and graphpad figures:
+
+mean_Heat_Exchange <- aggregate(Heat_Exchange ~ Condition + Distance, data = import_data4, FUN = mean, na.rm = TRUE)
+sd_Heat_Exchange <- aggregate(Heat_Exchange ~ Condition + Distance, data = import_data4, FUN = sd, na.rm = TRUE)
+summary_stats_Heat_Exchange <- merge(mean_Heat_Exchange, sd_Heat_Exchange, by = c("Condition", "Distance"))
+names(summary_stats_Heat_Exchange) <- c("Condition", "Distance", "Mean_Heat_Exchange", "SD_Heat_Exchange")
+summary_stats_Heat_Exchange$Condition <- factor(summary_stats_Heat_Exchange$Condition,
+                                          levels = c("10C", "20C", "32C"))
+
+summary_stats_Heat_Exchange$Distance <- factor(summary_stats_Heat_Exchange$Distance,
+                                         levels = c("0km", "5km", "10km", "15km", "20km"))
+summary_stats_Heat_Exchange <- summary_stats_Heat_Exchange[order(summary_stats_Heat_Exchange$Condition, summary_stats_Heat_Exchange$Distance), ]
+summary_stats_Heat_Exchange$Mean_Heat_Exchange <- round(summary_stats_Heat_Exchange$Mean_Heat_Exchange, 0) #Change the number at the end for number of decimal places
+summary_stats_Heat_Exchange$SD_Heat_Exchange <- round(summary_stats_Heat_Exchange$SD_Heat_Exchange, 0)  #Change the number at the end for number of decimal places
+print(summary_stats_Heat_Exchange)
+
+
+# Step 6 Run an RM-ANOVA on the LMM to get p values and effect size
+
+anova(Heat_ExchangexConditionxDistance.model) # output typical ANOVA stats
+effectsize::eta_squared(Heat_ExchangexConditionxDistance.model, partial = TRUE) # calclate partial eta square effect size
+
+#Step 7 If Condition is significant (p < 0.05), run pairwise comparisons, if not, do not run
+
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), adjust = "bonferroni") # pairwise comp w/ Bonferroni
+
+#Step 8 If Distance is significant (p < 0.05), run pairwise comparisons, if not, do not run
+
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Distance), adjust = "bonferroni") # pairwise comp w/ Bonferroni
+
+#Step 9 If Condition* Distance Interaction is significant (p < 0.05), run pairwise comparisons, if not, do not run. Here, you are essentially running an RM ANOVA at each distance
+
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "0km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "5km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "10km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "15km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
+emmeans(Heat_ExchangexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "20km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline#Variable 4 - Cadence
