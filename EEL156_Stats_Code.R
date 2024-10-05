@@ -38,7 +38,7 @@ library("car") #load library
 #import the csv file
 import_data <- read.csv("C:/users/pwall/Downloads/EEL156-Data Reduction-THISONE-1x3data.csv")
 
-import_data1 <- subset(import_data, Participant != participant_to_remove)
+import_data1 <- subset(import_data, Participant !)
 
 # recode condition as factor
 import_data1$Condition <- factor(import_data1$Condition,
@@ -189,9 +189,8 @@ emmeans(Delta_TcorexCondition.model, list(pairwise ~ Condition), adjust = "bonfe
 import_data2 <- read.csv("C:/users/pwall/Downloads/EEL156-Data Reduction-THISONE-1x5data.csv")
 
 #Remove Participants and Distances
-participant_to_remove <- c("9", "10", "11", "12")
 distance_to_remove <- c("2", "3", "4", "5", "7", "8", "9", "10", "12", "13", "14", "15", "17", "18", "19", "20")
-import_data3 <- subset(import_data2, !(Participant %in% participant_to_remove))
+import_data3 <- subset(import_data2, !)
 import_data4 <- subset(import_data3, !(Distance %in% distance_to_remove))
 
 
