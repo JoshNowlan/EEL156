@@ -520,7 +520,7 @@ emmeans(CadencexConditionxDistance.model, list(pairwise ~ Condition), at = list(
 emmeans(CadencexConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = "20km"), adjust = "bonferroni") # pairwise comp for interaction w/ Bonferroni at baseline
 #$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
-# Variable 5 - Finger_Temp
+# Variable 6 - Finger_Temp
 
 # Step 1 - Visualize Finger_Temp data
 boxplot(import_data4$Finger_Temp ~ import_data4$Condition)
@@ -570,7 +570,7 @@ for (distance in distances) {
   emmeans(Finger_TempxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = distance), adjust = "bonferroni")
 }
 #######################################################################################
-# Variable 5 - Mean_Skin_Temp
+# Variable 7 - Mean_Skin_Temp
 
 # Step 1 - Visualize Mean_Skin_Temp data
 boxplot(import_data4$Mean_Skin_Temp ~ import_data4$Condition)
@@ -619,7 +619,7 @@ for (distance in distances) {
   emmeans(Mean_Skin_TempxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = distance), adjust = "bonferroni")
 }
 ##################################################################################
-# Variable 5 - Cleaned_HR
+# Variable 8 - Cleaned_HR
 
 # Step 1 - Visualize Cleaned_HR data
 boxplot(import_data4$Cleaned_HR ~ import_data4$Condition)
@@ -668,7 +668,7 @@ for (distance in distances) {
   emmeans(Cleaned_HRxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = distance), adjust = "bonferroni")
 }
 ###########################################################################################
-# Variable 5 - Immersion_Box_Temp
+# Variable 9 - Immersion_Box_Temp
 
 # Step 1 - Visualize Immersion_Box_Temp data
 boxplot(import_data4$Immersion_Box_Temp ~ import_data4$Condition)
@@ -716,4 +716,52 @@ emmeans(Immersion_Box_TempxConditionxDistance.model, list(pairwise ~ Distance), 
 for (distance in distances) {
   emmeans(Immersion_Box_TempxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = distance), adjust = "bonferroni")
 }
+###########################################################################################
+# Variable 10 - Hand_Temp
 
+# Step 1 - Visualize Hand_Temp data
+boxplot(import_data4$Hand_Temp ~ import_data4$Condition)
+boxplot(import_data4$Hand_Temp ~ import_data4$Distance)
+
+# Step 2 - Create model Hand_Temp x Condition x Distance
+Hand_TempxConditionxDistance.model <- lmer(Hand_Temp ~ Condition * Distance + (1|Participant), data = import_data4)
+
+# Step 3 - Check for normality using Shapiro-Wilk and Q-Q Plot
+hist(residuals(Hand_TempxConditionxDistance.model), freq = FALSE, main = "Residuals Histogram")
+residuals_Hand_Temp <- residuals(Hand_TempxConditionxDistance.model)
+qqnorm(residuals_Hand_Temp)
+qqline(residuals_Hand_Temp)
+shapiro.test(residuals_Hand_Temp)
+
+# Step 4 - Check for homoscedasticity using a residuals plot and Levene's test
+plot(Hand_TempxConditionxDistance.model, resid = TRUE)
+leveneTest(Hand_Temp ~ Condition, data = import_data4)
+
+# Step 5 - Find Means and Standard Deviations
+mean_Hand_Temp <- aggregate(Hand_Temp ~ Condition + Distance, data = import_data4, FUN = mean, na.rm = TRUE)
+sd_Hand_Temp <- aggregate(Hand_Temp ~ Condition + Distance, data = import_data4, FUN = sd, na.rm = TRUE)
+summary_stats_Hand_Temp <- merge(mean_Hand_Temp, sd_Hand_Temp, by = c("Condition", "Distance"))
+names(summary_stats_Hand_Temp) <- c("Condition", "Distance", "Mean_Hand_Temp", "SD_Hand_Temp")
+summary_stats_Hand_Temp$Condition <- factor(summary_stats_Hand_Temp$Condition,
+                                            levels = c("10C", "20C", "32C"))
+summary_stats_Hand_Temp$Distance <- factor(summary_stats_Hand_Temp$Distance,
+                                           levels = c("0km", "5km", "10km", "15km", "20km"))
+summary_stats_Hand_Temp <- summary_stats_Hand_Temp[order(summary_stats_Hand_Temp$Condition, summary_stats_Hand_Temp$Distance), ]
+summary_stats_Hand_Temp$Mean_Hand_Temp <- round(summary_stats_Hand_Temp$Mean_Hand_Temp, 0)
+summary_stats_Hand_Temp$SD_Hand_Temp <- round(summary_stats_Hand_Temp$SD_Hand_Temp, 0)
+print(summary_stats_Hand_Temp)
+
+# Step 6 - RM-ANOVA and effect size
+anova(Hand_TempxConditionxDistance.model)
+effectsize::eta_squared(Hand_TempxConditionxDistance.model, partial = TRUE)
+
+# Step 7 - Pairwise comparisons for Condition
+emmeans(Hand_TempxConditionxDistance.model, list(pairwise ~ Condition), adjust = "bonferroni")
+
+# Step 8 - Pairwise comparisons for Distance
+emmeans(Hand_TempxConditionxDistance.model, list(pairwise ~ Distance), adjust = "bonferroni")
+
+# Step 9 - Pairwise comparisons for Condition*Distance Interaction
+for (distance in distances) {
+  emmeans(Hand_TempxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = distance), adjust = "bonferroni")
+}
