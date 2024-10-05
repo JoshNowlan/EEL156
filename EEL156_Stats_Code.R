@@ -38,7 +38,6 @@ library("car") #load library
 #import the csv file
 import_data <- read.csv("C:/users/pwall/Downloads/EEL156-Data Reduction-THISONE-1x3data.csv")
 
-participant_to_remove <- c("9","10","11","12" )
 import_data1 <- subset(import_data, Participant != participant_to_remove)
 
 # recode condition as factor
