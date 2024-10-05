@@ -571,7 +571,7 @@ distances <- c("0km", "5km", "10km", "15km", "20km")
 for (distance in distances) {
   emmeans(Finger_TempxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = distance), adjust = "bonferroni")
 }
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#######################################################################################
 # Variable 5 - Mean_Skin_Temp
 
 # Step 1 - Visualize Mean_Skin_Temp data
@@ -620,7 +620,7 @@ emmeans(Mean_Skin_TempxConditionxDistance.model, list(pairwise ~ Distance), adju
 for (distance in distances) {
   emmeans(Mean_Skin_TempxConditionxDistance.model, list(pairwise ~ Condition), at = list(Time = distance), adjust = "bonferroni")
 }
-$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+##################################################################################
 # Variable 5 - Cleaned_HR
 
 # Step 1 - Visualize Cleaned_HR data
