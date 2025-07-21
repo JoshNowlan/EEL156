@@ -1,0 +1,75 @@
+# --------------------------------------------
+# R Script: Friedman + Wilcoxon Analysis
+# Dataset: EEL156_Perceptual_Database.csv
+# Author: Josh Nowlan + ChatGPT
+# --------------------------------------------
+
+# 1. Install & load required packages
+install.packages(c("tidyverse", "rstatix"))
+library(tidyverse)
+library(rstatix)
+library(readr)
+
+# 2. Load data
+df <- read.csv("C:/Users/JoshN/Downloads/EEL156_Perceptual_Database.csv")
+
+
+# 3. Define constants
+distances <- c("0km", "5km", "10km", "15km", "20km")
+conditions <- c("A", "B", "C")
+condition_labels <- c("10°C", "20°C", "32°C")
+
+# 4. Initialize results storage
+friedman_results <- list()
+pairwise_results <- list()
+
+# 5. Loop through variables and distances
+for (var in unique(df$Variable)) {
+  for (dist in distances) {
+    # Build column names for this distance
+    cols <- paste0(conditions, ".", dist)
+    
+    # Subset and clean data
+    df_sub <- df %>%
+      filter(Variable == var) %>%
+      select(Participant, all_of(cols)) %>%
+      drop_na()
+    
+    # Skip if insufficient data
+    if (nrow(df_sub) < 3) next
+    
+    # Reshape to long format
+    df_long <- df_sub %>%
+      pivot_longer(cols = -Participant, names_to = "Condition", values_to = "Score") %>%
+      mutate(
+        Condition = recode(Condition,
+                           !!paste0("A.", dist) := "10°C",
+                           !!paste0("B.", dist) := "20°C",
+                           !!paste0("C.", dist) := "32°C")
+      )
+    
+    # Run Friedman's ANOVA
+    friedman_test <- df_long %>%
+      friedman_test(Score ~ Condition | Participant) %>%
+      mutate(Variable = var, Distance = dist)
+    
+    # Run pairwise Wilcoxon tests
+    posthoc <- df_long %>%
+      pairwise_wilcox_test(Score ~ Condition, paired = TRUE, p.adjust.method = "bonferroni") %>%
+      mutate(Variable = var, Distance = dist)
+    
+    # Store results
+    friedman_results[[paste(var, dist, sep = "_")]] <- friedman_test
+    pairwise_results[[paste(var, dist, sep = "_")]] <- posthoc
+  }
+}
+
+# 6. Combine all results into data frames
+friedman_df <- bind_rows(friedman_results)
+pairwise_df <- bind_rows(pairwise_results)
+
+# 7. Save outputs to CSV
+write_csv(friedman_df, "Friedman_Results.csv")
+write_csv(pairwise_df, "Wilcoxon_Pairwise_Results.csv")
+
+cat("✅ Analysis complete. Files saved:\n- Friedman_Results.csv\n- Wilcoxon_Pairwise_Results.csv\n")
